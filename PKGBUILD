@@ -1,27 +1,44 @@
 # Maintainer: wmax641 <spam at wmax641 dot website>
-pkgname="brother-hl1210w"
-pkgver="3.0.1"
-pkgrel="2"
-pkgdesc="Brother HL-1210W CUPS driver. After installing this, install printer from CUPS web interface 
-url="http://support.brother.com/g/b/downloadtop.aspx?c=au&lang=en&prod=hl1210w_eu_as"
-license=('GPL')
+# Contributor: Marius Rejdak <mariuswol at gmail dot com>
+pkgname=brother-hl1210w
+pkgver=3.0.1_1
+pkgrel=3
+pkgdesc='Driver for the Brother HL-1210W printer'
+url='http://support.brother.com/g/b/downloadtop.aspx?c=gb&lang=en&prod=hl1210w_eu_as'
+license=('custom:brother')
+depends=('cups' 'ghostscript')
+depends_x86_64=('lib32-glibc')
 arch=('i686' 'x86_64')
-depends=('lib32-glibc' 'cups>=2.1.2' 'ghostscript' ) 
-md5sums=('76db4e113a1186f86410146b2ea39166'
+
+md5sums=('49b496b65089f31917c974f8bcc9643c'
+         '76db4e113a1186f86410146b2ea39166'
          '0d7c2ba3a1a30b5babd855efac48b1fb')
-source=(
-   http://download.brother.com/welcome/dlf101549/hl1210wlpr-3.0.1-1.i386.rpm \
-   http://download.brother.com/welcome/dlf101548/hl1210wcupswrapper-3.0.1-1.i386.rpm
-)
 
+source=("brother-hl1210w.patch"
+        "http://download.brother.com/welcome/dlf101549/hl1210wlpr-${pkgver/_/-}.i386.rpm"
+        "http://download.brother.com/welcome/dlf101548/hl1210wcupswrapper-${pkgver/_/-}.i386.rpm")
 
-package() {
-   mkdir -p "$pkgdir/usr/share/cups/model/"
-   mkdir -p "$pkgdir/usr/lib/cups/filter/"
-
-   cp "$srcdir/opt/brother/Printers/HL1210W/cupswrapper/brother-HL1210W-cups-en.ppd" "$pkgdir/usr/share/cups/model/brother-HL1210W-cups-en.ppd"
-   cp "$srcdir/opt/brother/Printers/HL1210W/cupswrapper/brother_lpdwrapper_HL1210W"  "$pkgdir/usr/lib/cups/filter/brother_lpdwrapper_HL1210W"
-   cp -r "$srcdir/opt/" "$pkgdir/opt/"
-
+build() {
+    cd "$srcdir"
+    patch -Np0 < brother-hl1210w.patch
 }
 
+package() {
+    cp -R "$srcdir"/opt "$pkgdir"/opt
+
+    install -d "$pkgdir"/usr/share/cups/model
+    ln -s /opt/brother/Printers/HL1210W/cupswrapper/brother-HL1210W-cups-en.ppd "$pkgdir"/usr/share/cups/model
+
+    install -d "$pkgdir"/usr/lib/cups/filter
+    ln -s /opt/brother/Printers/HL1210W/cupswrapper/brother_lpdwrapper_HL1210W "$pkgdir"/usr/lib/cups/filter
+
+    install -d "$pkgdir"/etc/opt/brother/Printers/HL1210W/inf
+    ln -s /opt/brother/Printers/HL1210W/inf/brHL1210Wrc "$pkgdir"/etc/opt/brother/Printers/HL1210W/inf/
+
+    install -d "$pkgdir"/usr/bin
+    cat << EOF > "$pkgdir"/usr/bin/brprintconflsr3_HL1210W
+#!/bin/sh
+/opt/brother/Printers/HL1210W/lpd/brprintconflsr3 -P HL1210W $*
+EOF
+    chmod 755 "$pkgdir"/usr/bin/brprintconflsr3_HL1210W
+}

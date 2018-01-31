@@ -1,0 +1,8 @@
+--- opt/brother/Printers/HL1210W/inf/brHL1210Wfunc.old	2014-09-16 03:12:09.000000000 +0200
++++ opt/brother/Printers/HL1210W/inf/brHL1210Wfunc	2018-01-31 15:13:37.845006723 +0100
+@@ -24,3 +24,5 @@
+ Sleep={PrinterDefault,"1-99"}
+ Toner Save Mode={ON,OFF}
+ 
++[psconvert2]
++pstops=/usr/lib/cups/filter/pstops
